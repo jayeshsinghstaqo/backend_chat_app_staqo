@@ -21,6 +21,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         enum: ['male', 'female', 'transgender']
     },
+    profilePic: {
+        type: String,
+        default: "",
+    },
     deletedAt: {
         type: Date,
         default: null
