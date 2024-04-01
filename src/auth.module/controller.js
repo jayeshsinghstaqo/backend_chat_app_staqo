@@ -12,13 +12,13 @@ exports.generateOtpAndRegisterMobile = async (req, res) => {
         }
         //    let OTP = otpGenerator.generate(4, {digits: true, alphabets: false, upperCase: false, specialChars: false});
         let OTP = mobile_number.slice(-4);
-        let existingRecord = UserModel.findOne({ mobile_number });
+        let existingRecord = await UserModel.findOne({ mobile_number });
         if (!existingRecord) {
-            let record = UserModel({
+            let record = await UserModel.create({
                 mobile_number,
                 otp: OTP
             })
-            await new record.save()
+            // await new record.save()
         }
         return res.json(new serviceResponse({ status: 201, data: { otp: OTP }, message: 'One Time Password sent successfully.' }))
     } catch (error) {
