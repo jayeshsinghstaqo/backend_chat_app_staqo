@@ -41,6 +41,15 @@ export const verifyOtpAndVerifyUser = async (req, res) => {
             user.is_profile_complete = false;
             await user.save();
         }
+        generateTokenAndSetCookie(user._id, res);
+
+        res.status(200).json({
+            _id: user._id,
+            full_name: user.full_name,
+            is_profile_complete: user.is_profile_complete,
+            mobile_number: user.mobile_number,
+            profilePic: user.profilePic,
+        });
         return res.status(200).json({ message: 'OTP verified successfully', user });
     } catch (error) {
         return res.status(500).json({ error: error.message });
