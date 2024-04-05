@@ -6,11 +6,11 @@ import cors from 'cors'
 import authRoutes from "./backend/routes/auth.routes.js";
 import messageRoutes from "./backend/routes/message.routes.js";
 import userRoutes from "./backend/routes/user.routes.js";
-import {handleCors} from './backend/utils/handleCors.js'
 
 
 import connectToMongoDB from "./backend/db/connectToMongoDB.js";
 import { app, server } from "./backend/socket/socket.js";
+import handleCors from "./backend/utils/handleCors.js";
 
 const PORT = process.env.PORT || 5000;
 

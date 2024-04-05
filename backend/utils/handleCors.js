@@ -1,4 +1,4 @@
-exports.handleCors = (req, res, next) => {
+module.exports = handleCors = (req, res, next) => {
     try {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
