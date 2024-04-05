@@ -61,8 +61,8 @@ export const signup = async (req, res) => {
         const { full_name, mobile_number, gender } = req.body;
         const user = await User.findOne({ mobile_number });
 
-        if (!user || user.otp != otp) {
-            return res.status(400).send({ error: "Invalid mobile_number or OTP" });
+        if (!user ) {
+            return res.status(400).send({ error: "Invalid mobile_number" });
         }
 
         if (user.is_profile_complete === true) {
@@ -81,7 +81,7 @@ export const signup = async (req, res) => {
         res.status(201).send({
             _id: user._id,
             full_name: user.full_name,
-            is_profile_complete: user.is_profile_complete,
+            is_profile_complete: true,
             mobile_number: user.mobile_number,
             profilePic: user.profilePic,
         });
