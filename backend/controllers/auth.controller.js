@@ -12,15 +12,16 @@ export const generateOtpAndRegisterMobile = async (req, res) => {
         mobile_number = String(mobile_number);
         let OTP = mobile_number.slice(-4);
         let existingRecord = await User.findOne({ mobile_number });
-        if (existingRecord) {
-            return res.status(400).send({ error: 'User already exist, try different number' })
+        if (!existingRecord) {
+            let record = await User.create({ mobile_number, otp: OTP });
+            if (record) {
+                return res.status(201).send({ message: 'One Time Password sent successfully.', otp: OTP });
+            } else {
+                return res.status(201).send({ message: 'something went wrong' });
+            }
         }
-        let record = await User.create({ mobile_number, otp: OTP });
-        if (record) {
-            return res.status(201).send({ message: 'One Time Password sent successfully.', otp: OTP });
-        } else {
-            return res.status(201).send({ message: 'something went wrong' });
-        }
+        return res.status(201).send({ message: 'One Time Password sent successfully.', otp: OTP });
+
     } catch (error) {
         return res.status(500).send({ error: error.message });
     }
@@ -61,7 +62,7 @@ export const signup = async (req, res) => {
         const { full_name, mobile_number, gender } = req.body;
         const user = await User.findOne({ mobile_number });
 
-        if (!user ) {
+        if (!user) {
             return res.status(400).send({ error: "Invalid mobile_number" });
         }
 
