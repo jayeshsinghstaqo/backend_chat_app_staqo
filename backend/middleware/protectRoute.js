@@ -3,26 +3,30 @@ import User from "../models/user.model.js";
 
 const protectRoute = async (req, res, next) => {
 	try {
-		const token = req.cookies.jwt;
+		// const token = req.cookies.jwt;
+		let authorization = req.headers.authorization;
+		if (authorization) {
+			var tokenBearer = authorization.split(' ');
+			var token = tokenBearer[1];
 
-		if (!token) {
-			return res.status(401).json({ error: "Unauthorized - No Token Provided" });
+			if (!token) {
+				return res.status(401).json({ error: "Unauthorized - No Token Provided" });
+			}
+
+			const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+			if (!decoded) {
+				return res.status(401).json({ error: "Unauthorized - Invalid Token" });
+			}
+
+			const user = await User.findById(decoded.userId).select("-otp");
+
+			if (!user) {
+				return res.status(404).json({ error: "User not found" });
+			}
+
+			req.user = user;
 		}
-
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-		if (!decoded) {
-			return res.status(401).json({ error: "Unauthorized - Invalid Token" });
-		}
-
-		const user = await User.findById(decoded.userId).select("-otp");
-
-		if (!user) {
-			return res.status(404).json({ error: "User not found" });
-		}
-
-		req.user = user;
-
 		next();
 	} catch (error) {
 		console.log("Error in protectRoute middleware: ", error.message);
