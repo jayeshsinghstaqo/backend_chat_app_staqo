@@ -7,20 +7,23 @@ export const generateOtpAndRegisterMobile = async (req, res) => {
     try {
         let { mobile_number } = req.body;
         if (!mobile_number) {
-            return res.status(400).json({ error: "mobile_number not provided" });
+            return res.status(400).send({ error: "mobile_number not provided" });
         }
-		mobile_number = String(mobile_number); 
+        mobile_number = String(mobile_number);
         let OTP = mobile_number.slice(-4);
         let existingRecord = await User.findOne({ mobile_number });
         if (!existingRecord) {
-            await User.create({
-                mobile_number,
-                otp: OTP
-            });
+            let record = await User.create({ mobile_number, otp: OTP });
+            if (record) {
+                return res.status(201).send({ message: 'One Time Password sent successfully.', otp: OTP });
+            } else {
+                return res.status(201).send({ message: 'something went wrong' });
+            }
         }
-        return res.status(201).json({ message: 'One Time Password sent successfully.', otp: OTP });
+        return res.status(201).send({ message: 'One Time Password sent successfully.', otp: OTP });
+
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(500).send({ error: error.message });
     }
 };
 
@@ -28,36 +31,43 @@ export const verifyOtpAndVerifyUser = async (req, res) => {
     try {
         const { mobile_number, otp } = req.body;
         if (!mobile_number || !otp) {
-            return res.status(400).json({ message: 'Mobile number or OTP not provided!' });
+            return res.status(400).send({ message: 'Mobile number or OTP not provided!' });
         }
         const user = await User.findOne({ mobile_number });
         if (!user) {
-            return res.status(404).json({ message: 'Invalid mobile number!' });
+            return res.status(404).send({ message: 'Invalid mobile number!' });
         }
         if (otp != user.otp) {
-            return res.status(404).json({ message: 'Invalid OTP!' });
+            return res.status(404).send({ message: 'Invalid OTP!' });
         }
-        if (!user.is_profile_complete) {
-            user.is_profile_complete = false;
-            await user.save();
-        }
-        return res.status(200).json({ message: 'OTP verified successfully', user });
+        await user.save();
+
+        generateTokenAndSetCookie(user._id, res);
+
+        res.status(200).send({
+            _id: user._id,
+            full_name: user.full_name,
+            is_profile_complete: user.is_profile_complete,
+            mobile_number: user.mobile_number,
+            profilePic: user.profilePic,
+        });
+        return res.status(200).send({ message: 'OTP verified successfully', user });
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(500).send({ error: error.message });
     }
 };
 
 export const signup = async (req, res) => {
     try {
-        const { full_name, mobile_number, otp, gender } = req.body;
+        const { full_name, mobile_number, gender } = req.body;
         const user = await User.findOne({ mobile_number });
 
-        if (!user || user.otp != otp) {
-            return res.status(400).json({ error: "Invalid mobile_number or OTP" });
+        if (!user) {
+            return res.status(400).send({ error: "Invalid mobile_number" });
         }
 
         if (user.is_profile_complete === true) {
-            return res.status(400).json({ error: "Profile already completed" });
+            return res.status(400).send({ error: "Profile already completed" });
         }
 
         user.full_name = full_name;
@@ -67,33 +77,33 @@ export const signup = async (req, res) => {
 
         await user.save();
 
-        generateTokenAndSetCookie(user._id, res);
+         generateTokenAndSetCookie(user._id, res);
 
-        res.status(201).json({
+        res.status(201).send({
             _id: user._id,
             full_name: user.full_name,
-            is_profile_complete: user.is_profile_complete,
+            is_profile_complete: true,
             mobile_number: user.mobile_number,
             profilePic: user.profilePic,
         });
     } catch (error) {
         console.log("Error in signup controller", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).send({ error: "Internal Server Error" });
     }
 };
-
+/*
 export const login = async (req, res) => {
     try {
         const { mobile_number, otp } = req.body;
         const user = await User.findOne({ mobile_number });
 
         if (!user || user.otp != otp) {
-            return res.status(400).json({ error: "Invalid mobile_number or OTP" });
+            return res.status(400).send({ error: "Invalid mobile_number or OTP" });
         }
 
         generateTokenAndSetCookie(user._id, res);
 
-        res.status(200).json({
+        res.status(200).send({
             _id: user._id,
             full_name: user.full_name,
             is_profile_complete: user.is_profile_complete,
@@ -102,16 +112,16 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.log("Error in login controller", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).send({ error: "Internal Server Error" });
     }
 };
-
+*/
 export const logout = (req, res) => {
     try {
         res.clearCookie("jwt");
-        res.status(200).json({ message: "Logged out successfully" });
+        res.status(200).send({ message: "Logged out successfully" });
     } catch (error) {
         console.log("Error in logout controller", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).send({ error: "Internal Server Error" });
     }
 };
