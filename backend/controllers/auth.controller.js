@@ -77,7 +77,7 @@ export const signup = async (req, res) => {
 
         await user.save();
 
-        generateTokenAndSetCookie(user._id, res);
+         generateTokenAndSetCookie(user._id, res);
 
         res.status(201).send({
             _id: user._id,
