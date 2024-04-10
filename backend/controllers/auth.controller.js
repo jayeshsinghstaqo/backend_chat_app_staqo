@@ -42,16 +42,17 @@ export const verifyOtpAndVerifyUser = async (req, res) => {
         }
         await user.save();
 
-        generateTokenAndSetCookie(user._id, res);
+        let token = generateTokenAndSetCookie(user._id, res);
 
-        res.status(200).send({
+        const record = {
             _id: user._id,
             full_name: user.full_name,
             is_profile_complete: user.is_profile_complete,
             mobile_number: user.mobile_number,
             profilePic: user.profilePic,
-        });
-        return res.status(200).send({ message: 'OTP verified successfully', user });
+            token
+        };
+        return res.status(200).send({ message: 'OTP verified successfully', data: record });
     } catch (error) {
         return res.status(500).send({ error: error.message });
     }
@@ -63,11 +64,11 @@ export const signup = async (req, res) => {
         const user = await User.findOne({ mobile_number });
 
         if (!user) {
-            return res.status(400).send({ error: "Invalid mobile_number" });
+            return res.status(400).send({ message: "Invalid mobile_number" });
         }
 
         if (user.is_profile_complete === true) {
-            return res.status(400).send({ error: "Profile already completed" });
+            return res.status(200).send({ message: "Profile already completed" });
         }
 
         user.full_name = full_name;
@@ -77,7 +78,7 @@ export const signup = async (req, res) => {
 
         await user.save();
 
-         generateTokenAndSetCookie(user._id, res);
+        let token = generateTokenAndSetCookie(user._id, res);
 
         res.status(201).send({
             _id: user._id,
@@ -85,6 +86,7 @@ export const signup = async (req, res) => {
             is_profile_complete: true,
             mobile_number: user.mobile_number,
             profilePic: user.profilePic,
+            token
         });
     } catch (error) {
         console.log("Error in signup controller", error.message);

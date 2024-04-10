@@ -19,13 +19,6 @@ dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors())
-app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-Width, Content-Type, Accept, Authorization');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
